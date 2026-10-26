@@ -1,5 +1,39 @@
 # Lab: Authorizing Requests
 
+This Flask and React blog gives signed-in readers access to a separate list of
+member-only articles. The API uses a Flask session to authorize both member
+routes. Visitors receive a JSON error and HTTP 401 when they request either
+route without signing in.
+
+## Run locally
+
+Use Python 3.8.13 and Node.js. From the project root:
+
+```bash
+pipenv install
+npm install --prefix client
+cd server
+pipenv run flask db upgrade
+pipenv run python seed.py
+pipenv run python app.py
+```
+
+In a second terminal, run `npm start --prefix client` from the project root and
+open `http://localhost:4000`. Sign in with a username created by the seed
+script; this educational app does not use passwords.
+
+## Member access
+
+| Method and path | Signed-in response | Signed-out response |
+| --- | --- | --- |
+| `GET /members_only_articles` | JSON list filtered to member-only articles, HTTP 200 | JSON `error`, HTTP 401 |
+| `GET /members_only_articles/<id>` | JSON article, HTTP 200; unknown IDs return 404 | JSON `error`, HTTP 401 |
+
+The session also powers `POST /login`, `GET /check_session`, and
+`DELETE /logout`. To run the backend tests after seeding, use `pipenv run pytest`.
+
+## Lab instructions
+
 ## Scenario
 
 In this lab, we'll continue working on the blog site, and add some features that

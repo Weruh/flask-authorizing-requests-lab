@@ -7,6 +7,28 @@ app.secret_key = b'a\xdb\xd2\x13\x93\xc1\xe9\x97\xef2\xe3\x004U\xd1Z'
 
 class TestApp:
     '''Flask API in app.py'''
+
+    def test_member_endpoints_require_login(self):
+        '''returns a useful unauthorized response for both member endpoints.'''
+        with app.test_client() as client:
+            for path in ('/members_only_articles', '/members_only_articles/1'):
+                response = client.get(path)
+                assert response.status_code == 401
+                assert response.get_json()['error']
+
+    def test_login_session_and_logout(self):
+        '''restores a logged-in user and rejects the session after logout.'''
+        with app.test_client() as client:
+            assert client.get('/check_session').status_code == 401
+
+            user = User.query.first()
+            response = client.post('/login', json={'username': user.username})
+            assert response.status_code == 200
+            assert response.get_json()['username'] == user.username
+            assert client.get('/check_session').get_json()['id'] == user.id
+
+            client.delete('/logout')
+            assert client.get('/check_session').status_code == 401
     
     def test_can_only_access_member_only_while_logged_in(self):
         '''allows logged in users to access member-only article index at /members_only_articles.'''
